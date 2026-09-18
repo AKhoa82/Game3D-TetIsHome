@@ -301,19 +301,12 @@ Assets/
 │   ├── Scenes/                                    --- Toàn bộ Scene/Map của game
 │   │   ├── 00_MainMenu/                           --- Scene menu chính
 │   │   ├── 01_Opening/                            --- Scene mở đầu và giới thiệu nhân vật
-│   │   ├── 02_House/                              --- Scene nhà bà và khu vực nhà chính
-│   │   ├── 03_Market/                             --- Scene chợ Tết
-│   │   ├── 04_Garden/                             --- Scene khu vườn
-│   │   ├── 05_RiceField/                          --- Scene ruộng
-│   │   ├── 06_Forest/                             --- Scene khu rừng
-│   │   ├── 07_Calligraphy/                        --- Scene nhà văn hóa và ông đồ
-│   │   ├── 08_Kitchen/                            --- Scene khu vực gói và nấu bánh
-│   │   ├── 09_ChildrenArea/                       --- Scene khu vực trẻ em
-│   │   ├── 10_LanternVillage/                    --- Scene đường làng trang trí đèn lồng
-│   │   ├── 11_FireEvent/                          --- Scene sự kiện cháy và cứu hộ
-│   │   ├── 12_Temple/                             --- Scene sân đình và cây mai cổ thụ
-│   │   ├── 13_FinalDefense/                       --- Scene trận chiến bảo vệ làng cuối game
-│   │   └── 14_Ending/                             --- Scene giao thừa và các Ending
+│   │   ├── 02_House/                              --- Scene nhà bà
+│   │   ├── 03_ResidentialArea/                    --- Scene khu dân cư ( nhà dân, sân đình,...)
+│   │   ├── 04_Market/                             --- Scene chợ ( chợ tết, nhà văn hóa ông đồ,...)
+│   │   ├── 05_Suburban/                           --- Scene ngoại ô( rừng, ruộng)
+│   │   ├── 06_FinalDefense/                       --- Scene trận chiến bảo vệ làng cuối game
+│   │   └── 07_Ending/                             --- Scene giao thừa và các Ending
 │   │
 │   ├── Scripts/                                   --- Toàn bộ mã nguồn C# của game
 │   │   ├── Core/                                  --- Các hệ thống nền tảng dùng chung cho toàn bộ game
