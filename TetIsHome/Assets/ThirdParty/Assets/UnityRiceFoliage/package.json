@@ -1,0 +1,19 @@
+{
+  "name": "com.local.rice-foliage",
+  "version": "1.0.0",
+  "displayName": "Rice Foliage URP",
+  "description": "Project-local URP rice foliage with five growth stages, wind animation, LOD prefabs, and an instanced field renderer.",
+  "unity": "2022.3",
+  "dependencies": {
+    "com.unity.render-pipelines.universal": "14.0.11"
+  },
+  "keywords": [
+    "rice",
+    "foliage",
+    "urp",
+    "vegetation"
+  ],
+  "author": {
+    "name": "Local Asset Conversion"
+  }
+}
