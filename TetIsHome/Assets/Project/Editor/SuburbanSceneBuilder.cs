@@ -23,7 +23,6 @@ namespace TetIsHome.EditorTools
         private const string GeneratedFolder = "Assets/Project/Scenes/05_Suburban/Generated";
         private const string TerrainDataPath = GeneratedFolder + "/SuburbanTerrainData.asset";
         private const string GeneratedMaterialsFolder = GeneratedFolder + "/Materials";
-        private const string AutoBuildSessionKey = "TetIsHome.SuburbanSceneBuilder.AutoBuildAttempted";
 
         private const float WorldWidth = 240f;
         private const float WorldLength = 170f;
@@ -37,6 +36,8 @@ namespace TetIsHome.EditorTools
         private const string TreePrefabRoot = EnvironmentRoot + "/Ambient-Occlusion-Trees/Prefabs";
         private const string RiceLibraryPath = "Assets/_Project/Art/Vegetation/Rice/RiceFoliageLibrary.asset";
         private const string BambooPrefab = "Assets/ThirdParty/Bamboo/Prefabs/BambusaVulgaris-Master.prefab";
+        private const string RiceWaterMaterialPath = "Assets/Project/Materials/Mat_nuoc_ruong.mat";
+        private const string RiceWaterRuleMarker = "Water Rule v5 - Flat Edge Blend 025 - Exclude 01 05 10 11 13 15 18 20 21 - Bund 058";
 
         private static readonly string[] TreePrefabs =
         {
@@ -81,56 +82,140 @@ namespace TetIsHome.EditorTools
         private static readonly RicePatchDefinition[] RicePatches = CreateRicePatches();
 
         [InitializeOnLoadMethod]
-        private static void ScheduleFirstBuildIfNeeded()
+        private static void RegisterSuburbanAutoHouseBuild()
         {
-            if (Application.isBatchMode || SessionState.GetBool(AutoBuildSessionKey, false))
+            EditorSceneManager.sceneOpened -= HandleSuburbanSceneOpened;
+            EditorSceneManager.sceneOpened += HandleSuburbanSceneOpened;
+
+            var activeScene = SceneManager.GetActiveScene();
+            if (activeScene.path == ScenePath)
+            {
+                EditorApplication.delayCall += () => TryAutoBuildVillageHouses(activeScene);
+                EditorApplication.delayCall += () => TryAutoBuildRiceWater(activeScene);
+                EditorApplication.delayCall += () => TryAutoConfigureSuburbanCamera(activeScene);
+            }
+        }
+
+        private static void HandleSuburbanSceneOpened(Scene scene, OpenSceneMode mode)
+        {
+            if (scene.path != ScenePath || EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 return;
             }
 
-            EditorApplication.delayCall += TryFirstBuildIfNeeded;
+            EditorApplication.delayCall += () => TryAutoBuildVillageHouses(scene);
+            EditorApplication.delayCall += () => TryAutoBuildRiceWater(scene);
+            EditorApplication.delayCall += () => TryAutoConfigureSuburbanCamera(scene);
         }
 
-        private static void TryFirstBuildIfNeeded()
+        private static void TryAutoConfigureSuburbanCamera(Scene scene)
         {
-            SessionState.SetBool(AutoBuildSessionKey, true);
-            if (EditorApplication.isPlayingOrWillChangePlaymode || SceneAlreadyContainsGeneratedEnvironment())
+            if (!scene.IsValid() || !scene.isLoaded || EditorApplication.isPlayingOrWillChangePlaymode)
             {
                 return;
             }
 
-            for (var i = 0; i < SceneManager.sceneCount; i++)
+            var camera = Camera.main ?? UnityEngine.Object.FindFirstObjectByType<Camera>();
+            if (camera == null || camera.name == "Main Camera - Boundary Path Eye Level")
             {
-                if (SceneManager.GetSceneAt(i).isDirty)
-                {
-                    Debug.LogWarning(
-                        "[05_Suburban] Automatic first build was skipped because an open scene has unsaved changes. " +
-                        "Save your work, then run Tools > Tet Is Home > Build Scene > 05 Suburban From Reference.");
-                    return;
-                }
+                return;
             }
 
-            try
+            var wasDirty = scene.isDirty;
+            ConfigureCamera();
+            camera.name = "Main Camera - Boundary Path Eye Level";
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!wasDirty)
             {
-                BuildScene();
-            }
-            catch (Exception exception)
-            {
-                Debug.LogException(exception);
+                EditorSceneManager.SaveScene(scene);
             }
         }
 
-        private static bool SceneAlreadyContainsGeneratedEnvironment()
+        private static void TryAutoBuildRiceWater(Scene scene)
         {
-            var projectRoot = Directory.GetParent(Application.dataPath)?.FullName;
-            if (string.IsNullOrEmpty(projectRoot))
+            if (!scene.IsValid() || !scene.isLoaded || EditorApplication.isPlayingOrWillChangePlaymode)
             {
-                return false;
+                return;
             }
 
-            var absoluteScenePath = Path.GetFullPath(Path.Combine(projectRoot, ScenePath));
-            return File.Exists(absoluteScenePath) &&
-                   File.ReadAllText(absoluteScenePath).Contains("m_Name: " + GeneratedRootName);
+            var wasDirty = scene.isDirty;
+
+            var environment = GameObject.Find("Suburban Environment") ?? GameObject.Find(GeneratedRootName);
+            var terrain = environment != null ? environment.GetComponentInChildren<Terrain>(true) : null;
+            var villageRoot = environment != null
+                ? environment.transform.Find("01_Irregular_Rice_Fields_And_Bamboo")
+                : null;
+            var waterRoot = villageRoot != null ? villageRoot.Find("Water In Young Rice Paddies") : null;
+            if (terrain == null || villageRoot == null)
+            {
+                return;
+            }
+
+            if (waterRoot != null && waterRoot.Find(RiceWaterRuleMarker) != null)
+            {
+                return;
+            }
+
+            if (waterRoot != null)
+            {
+                UnityEngine.Object.DestroyImmediate(waterRoot.gameObject);
+            }
+
+            EnsureGeneratedFolder();
+            RefreshSuburbanTerrainHeight(terrain);
+            BuildRiceWater(terrain, villageRoot);
+            EditorSceneManager.MarkSceneDirty(scene);
+            if (!wasDirty)
+            {
+                EditorSceneManager.SaveScene(scene);
+            }
+            Debug.Log("[05_Suburban] Young rice paddies were given polygon-matched water automatically.");
+        }
+
+        private static void RefreshSuburbanTerrainHeight(Terrain terrain)
+        {
+            var data = terrain.terrainData;
+            if (data == null || data.heightmapResolution != HeightResolution)
+            {
+                return;
+            }
+
+            data.SetHeights(0, 0, GenerateHeights());
+            EditorUtility.SetDirty(data);
+            terrain.Flush();
+        }
+
+        private static void TryAutoBuildVillageHouses(Scene scene)
+        {
+            if (!scene.IsValid() || !scene.isLoaded || scene.isDirty || EditorApplication.isPlayingOrWillChangePlaymode)
+            {
+                return;
+            }
+
+            var environment = GameObject.Find("Suburban Environment") ?? GameObject.Find(GeneratedRootName);
+            var terrain = environment != null ? environment.GetComponentInChildren<Terrain>(true) : null;
+            var villageRoot = environment != null
+                ? environment.transform.Find("01_Irregular_Rice_Fields_And_Bamboo")
+                : null;
+            var houses = villageRoot != null ? villageRoot.Find("Village Houses") : null;
+            var currentHouse = houses != null ? houses.Find("Nha Ven Duong 01 Nho") : null;
+            var currentSteps = currentHouse != null ? currentHouse.Find("Stone Porch Step 01") : null;
+
+            if (terrain == null || villageRoot == null || (currentHouse != null && currentSteps != null))
+            {
+                return;
+            }
+
+            if (houses != null)
+            {
+                UnityEngine.Object.DestroyImmediate(houses.gameObject);
+            }
+
+            EnsureGeneratedFolder();
+            BuildVillageHouses(terrain, villageRoot);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[05_Suburban] Village houses were generated automatically when the scene opened.");
         }
 
         [MenuItem("Tools/Tet Is Home/Build Scene/05 Suburban From Reference")]
@@ -188,6 +273,7 @@ namespace TetIsHome.EditorTools
 
             BuildRiceFields(terrain, villageRoot);
             BuildBambooFieldBoundary(terrain, villageRoot);
+            BuildVillageHouses(terrain, villageRoot);
             BuildBoundaryRoadSetDressing(terrain, roadRoot);
             BuildForest(terrain, forestRoot);
             BuildGameplayMarkers(terrain, markerRoot);
@@ -217,6 +303,7 @@ namespace TetIsHome.EditorTools
                 ScenePath,
                 RiceLibraryPath,
                 BambooPrefab,
+                RiceWaterMaterialPath,
                 TerrainLayerRoot + "/layer_ground_grass.terrainlayer",
                 TerrainLayerRoot + "/layer_ground_soil.terrainlayer",
                 TerrainLayerRoot + "/layer_ground_road.terrainlayer",
@@ -359,7 +446,7 @@ namespace TetIsHome.EditorTools
                     // Paddy boundaries double as narrow footpaths. Raising the polygon
                     // edges produces the compacted earthen bunds common between fields.
                     var bund = RiceBundMask(x, z);
-                    worldHeight += bund * 0.42f;
+                    worldHeight += bund * 0.58f;
 
                     heights[zIndex, xIndex] = Mathf.Clamp01(worldHeight / WorldHeight);
                 }
@@ -565,6 +652,108 @@ namespace TetIsHome.EditorTools
                 var renderer = field.AddComponent<SuburbanRicePatchRenderer>();
                 renderer.Configure(library, definition.stage, localPolygon, definition.spacing, 3100 + i * 97, terrain);
             }
+
+            BuildRiceWater(terrain, parent);
+        }
+
+        private static void BuildRiceWater(Terrain terrain, Transform parent)
+        {
+            var waterMaterial = AssetDatabase.LoadAssetAtPath<Material>(RiceWaterMaterialPath);
+            if (waterMaterial == null)
+            {
+                throw new InvalidOperationException("Could not load rice water material: " + RiceWaterMaterialPath);
+            }
+
+            var waterRoot = CreateGroup("Water In Young Rice Paddies", parent);
+            new GameObject(RiceWaterRuleMarker).transform.SetParent(waterRoot, false);
+            for (var i = 0; i < RicePatches.Length; i++)
+            {
+                var patch = RicePatches[i];
+                // Stages 3 and 4 are heading-to-yellow or already mature; keep
+                // those fields dry. The listed paddies are intentionally kept dry.
+                if (patch.stage >= 3 || IsRiceWaterExcluded(i + 1))
+                {
+                    continue;
+                }
+
+                var water = new GameObject("Water - " + patch.name);
+                water.transform.SetParent(waterRoot, false);
+                var meshFilter = water.AddComponent<MeshFilter>();
+                var meshRenderer = water.AddComponent<MeshRenderer>();
+                meshRenderer.sharedMaterial = waterMaterial;
+                meshFilter.sharedMesh = CreateRiceWaterMesh(terrain, patch.points, patch.name);
+                water.isStatic = true;
+            }
+        }
+
+        private static bool IsRiceWaterExcluded(int oneBasedPatchNumber)
+        {
+            switch (oneBasedPatchNumber)
+            {
+                case 1:
+                case 5:
+                case 10:
+                case 11:
+                case 13:
+                case 15:
+                case 18:
+                case 20:
+                case 21:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        private static Mesh CreateRiceWaterMesh(Terrain terrain, IReadOnlyList<Vector2> polygon, string name)
+        {
+            var center = Vector2.zero;
+            for (var i = 0; i < polygon.Count; i++)
+            {
+                center += polygon[i];
+            }
+
+            center /= polygon.Count;
+            var waterLevel = PolygonWaterLevel(terrain, polygon);
+            var vertices = new Vector3[polygon.Count + 1];
+            vertices[0] = new Vector3(center.x, waterLevel, center.y);
+            for (var i = 0; i < polygon.Count; i++)
+            {
+                var edgeGround = GroundHeight(terrain, polygon[i].x, polygon[i].y) - 0.015f;
+                var edgeHeight = Mathf.Lerp(waterLevel, edgeGround, 0.25f);
+                vertices[i + 1] = new Vector3(polygon[i].x, edgeHeight, polygon[i].y);
+            }
+
+            var triangles = new int[polygon.Count * 3];
+            for (var i = 0; i < polygon.Count; i++)
+            {
+                var next = (i + 1) % polygon.Count;
+                var triangle = i * 3;
+                // Reverse winding so the top face points upward in Unity's XZ plane.
+                triangles[triangle] = 0;
+                triangles[triangle + 1] = next + 1;
+                triangles[triangle + 2] = i + 1;
+            }
+
+            var mesh = new Mesh { name = "Water Surface - " + name };
+            mesh.vertices = vertices;
+            mesh.triangles = triangles;
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        private static float PolygonWaterLevel(Terrain terrain, IReadOnlyList<Vector2> polygon)
+        {
+            var highestGround = float.MinValue;
+            for (var i = 0; i < polygon.Count; i++)
+            {
+                highestGround = Mathf.Max(highestGround, GroundHeight(terrain, polygon[i].x, polygon[i].y));
+            }
+
+            // Flat water sits just below the highest edge, keeping the surface
+            // visible across the paddy without covering the rice stalks.
+            return highestGround - 0.03f;
         }
 
         private static void BuildBambooFieldBoundary(Terrain terrain, Transform parent)
@@ -588,6 +777,223 @@ namespace TetIsHome.EditorTools
                     heights[i],
                     "Bamboo Clump " + (i + 1).ToString("00"));
             }
+        }
+
+        [MenuItem("Tools/Tet Is Home/Build Scene/Add Village Houses To Open Suburban Scene")]
+        public static void AddVillageHousesToOpenScene()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            var environment = GameObject.Find("Suburban Environment") ?? GameObject.Find(GeneratedRootName);
+            var terrain = environment != null ? environment.GetComponentInChildren<Terrain>(true) : null;
+            if (terrain == null)
+            {
+                EditorUtility.DisplayDialog(
+                    "Suburban environment not found",
+                    "Open the 05_Suburban scene containing Suburban Environment, then try again.",
+                    "OK");
+                return;
+            }
+
+            var villageRoot = environment.transform.Find("01_Irregular_Rice_Fields_And_Bamboo");
+            if (villageRoot == null)
+            {
+                villageRoot = CreateGroup("01_Irregular_Rice_Fields_And_Bamboo", environment.transform);
+            }
+
+            var previousHouses = villageRoot.Find("Village Houses");
+            if (previousHouses != null)
+            {
+                UnityEngine.Object.DestroyImmediate(previousHouses.gameObject);
+            }
+
+            EnsureGeneratedFolder();
+            BuildVillageHouses(terrain, villageRoot);
+            EditorSceneManager.MarkSceneDirty(environment.scene);
+            EditorSceneManager.SaveScene(environment.scene);
+            Selection.activeGameObject = villageRoot.gameObject;
+        }
+
+        private static void BuildVillageHouses(Terrain terrain, Transform parent)
+        {
+            var housesRoot = CreateGroup("Village Houses", parent);
+            var homes = new[]
+            {
+                // The houses sit on the forest-side verge of the boundary road,
+                // keeping their footprints clear of the rice polygons.
+                new { name = "Nha Ven Duong 01 Nho", z = 22f, offset = 9.0f, yaw = 78f, width = 3.7f, depth = 3.1f, wallHeight = 2.7f, variant = 0 },
+                new { name = "Nha Ven Duong 02 Vua", z = 61f, offset = 11.0f, yaw = 103f, width = 5.2f, depth = 4.2f, wallHeight = 3.3f, variant = 1 },
+                new { name = "Nha Ven Duong 03 Dai", z = 103f, offset = 8.5f, yaw = 66f, width = 6.6f, depth = 5.0f, wallHeight = 4.1f, variant = 2 },
+                new { name = "Nha Ven Duong 04 Hep", z = 148f, offset = 10.0f, yaw = 121f, width = 4.3f, depth = 5.6f, wallHeight = 3.0f, variant = 1 }
+            };
+
+            foreach (var home in homes)
+            {
+                BuildVietnameseFarmhouse(
+                    home.name,
+                    housesRoot,
+                    terrain,
+                    RoadCenterX(home.z) + home.offset,
+                    home.z,
+                    home.yaw,
+                    home.width,
+                    home.depth,
+                    home.wallHeight,
+                    home.variant);
+            }
+        }
+
+        private static void BuildVietnameseFarmhouse(
+            string name,
+            Transform parent,
+            Terrain terrain,
+            float x,
+            float z,
+            float yaw,
+            float width,
+            float depth,
+            float wallHeight,
+            int variant)
+        {
+            var wallMaterial = CreateOrUpdateRuinMaterial(
+                variant == 2 ? "Vietnamese_House_Wall_PaleGreen" : "Vietnamese_House_Wall_WarmOchre",
+                variant == 2 ? new Color(0.48f, 0.55f, 0.39f, 1f) : new Color(0.72f, 0.57f, 0.32f, 1f),
+                0.08f);
+            var roofMaterial = CreateOrUpdateRuinMaterial(
+                "Vietnamese_House_Red_Clay_Tile",
+                new Color(0.48f, 0.16f, 0.075f, 1f),
+                0.12f);
+            var woodMaterial = CreateOrUpdateRuinMaterial(
+                "Vietnamese_House_Dark_Wood",
+                new Color(0.20f, 0.095f, 0.038f, 1f),
+                0.16f);
+            var foundationMaterial = CreateOrUpdateRuinMaterial(
+                "Vietnamese_House_Foundation",
+                new Color(0.31f, 0.29f, 0.23f, 1f),
+                0.06f);
+            var windowMaterial = CreateOrUpdateRuinMaterial(
+                "Vietnamese_House_Window_Dark",
+                new Color(0.055f, 0.085f, 0.075f, 1f),
+                0.30f);
+
+            HouseGroundHeights(terrain, x, z, yaw, width, depth, out var lowestGround, out var highestGround);
+            var house = CreateGroup(name, parent);
+            house.position = new Vector3(x, highestGround, z);
+            house.rotation = Quaternion.Euler(0f, yaw, 0f);
+
+            const float roofPitch = 32f;
+            var roofRadians = roofPitch * Mathf.Deg2Rad;
+            var halfRoofRun = depth * 0.5f + 0.65f;
+            var roofSlopeLength = halfRoofRun / Mathf.Cos(roofRadians);
+            var roofRise = halfRoofRun * Mathf.Tan(roofRadians);
+
+            var foundationDepth = Mathf.Max(0.36f, highestGround - lowestGround + 0.36f);
+            CreateHousePart("Stone Foundation", house,
+                new Vector3(0f, 0.18f - (foundationDepth - 0.36f) * 0.5f, 0f),
+                new Vector3(width + 0.5f, foundationDepth, depth + 0.5f), Vector3.zero, foundationMaterial);
+            CreateHousePart("Plastered Walls", house, new Vector3(0f, wallHeight * 0.5f + 0.35f, 0f),
+                new Vector3(width, wallHeight, depth), Vector3.zero, wallMaterial);
+
+            var roofY = wallHeight + 0.35f + roofRise * 0.5f;
+            var roofZ = depth * 0.25f + 0.28f;
+            CreateHousePart("Red Tile Roof Front", house, new Vector3(0f, roofY, -roofZ),
+                new Vector3(width + 1.25f, 0.22f, roofSlopeLength), new Vector3(-roofPitch, 0f, 0f), roofMaterial);
+            CreateHousePart("Red Tile Roof Back", house, new Vector3(0f, roofY, roofZ),
+                new Vector3(width + 1.25f, 0.22f, roofSlopeLength), new Vector3(roofPitch, 0f, 0f), roofMaterial);
+            CreateHousePart("Roof Ridge", house, new Vector3(0f, wallHeight + 0.38f + roofRise, 0f),
+                new Vector3(width + 1.35f, 0.28f, 0.32f), Vector3.zero, roofMaterial);
+
+            var frontZ = -depth * 0.5f - 0.07f;
+            CreateHousePart("Wooden Front Door", house, new Vector3(0f, 1.48f, frontZ),
+                new Vector3(1.55f, 2.55f, 0.16f), Vector3.zero, woodMaterial);
+            CreateHousePart("Left Window", house, new Vector3(-width * 0.29f, 1.75f, frontZ - 0.01f),
+                new Vector3(1.35f, 1.2f, 0.14f), Vector3.zero, windowMaterial);
+            CreateHousePart("Right Window", house, new Vector3(width * 0.29f, 1.75f, frontZ - 0.01f),
+                new Vector3(1.35f, 1.2f, 0.14f), Vector3.zero, windowMaterial);
+
+            var porchZ = -depth * 0.5f - 1.0f;
+            CreateHousePart("Front Porch", house, new Vector3(0f, 0.30f, porchZ),
+                new Vector3(width * 0.78f, 0.24f, 1.75f), Vector3.zero, foundationMaterial);
+            CreateHousePart("Porch Post Left", house, new Vector3(-width * 0.32f, 1.55f, porchZ - 0.52f),
+                new Vector3(0.22f, 2.65f, 0.22f), Vector3.zero, woodMaterial);
+            CreateHousePart("Porch Post Right", house, new Vector3(width * 0.32f, 1.55f, porchZ - 0.52f),
+                new Vector3(0.22f, 2.65f, 0.22f), Vector3.zero, woodMaterial);
+
+            var stepRise = Mathf.Max(0.12f, (highestGround - lowestGround + 0.18f) / 3f);
+            for (var step = 0; step < 3; step++)
+            {
+                var stepTop = 0.42f - stepRise * step;
+                CreateHousePart(
+                    "Stone Porch Step " + (step + 1).ToString("00"),
+                    house,
+                    new Vector3(0f, stepTop - stepRise * 0.5f, porchZ - 0.58f - step * 0.52f),
+                    new Vector3(width * 0.62f, stepRise, 0.52f),
+                    Vector3.zero,
+                    foundationMaterial);
+            }
+
+            if (variant == 1)
+            {
+                CreateHousePart("Side Kitchen", house, new Vector3(width * 0.57f, 1.35f, 0.45f),
+                    new Vector3(2.4f, 2.35f, depth * 0.72f), Vector3.zero, wallMaterial);
+                CreateHousePart("Kitchen Tile Roof", house, new Vector3(width * 0.57f, 2.72f, 0.45f),
+                    new Vector3(2.85f, 0.20f, depth * 0.82f), new Vector3(0f, 0f, -9f), roofMaterial);
+            }
+        }
+
+        private static void HouseGroundHeights(
+            Terrain terrain,
+            float x,
+            float z,
+            float yaw,
+            float width,
+            float depth,
+            out float lowest,
+            out float highest)
+        {
+            var rotation = Quaternion.Euler(0f, yaw, 0f);
+            var halfWidth = width * 0.5f + 0.8f;
+            var halfDepth = depth * 0.5f + 1.15f;
+            var samples = new[]
+            {
+                Vector3.zero,
+                new Vector3(-halfWidth, 0f, -halfDepth),
+                new Vector3(halfWidth, 0f, -halfDepth),
+                new Vector3(-halfWidth, 0f, halfDepth),
+                new Vector3(halfWidth, 0f, halfDepth)
+            };
+
+            lowest = float.MaxValue;
+            highest = float.MinValue;
+            foreach (var sample in samples)
+            {
+                var worldPoint = new Vector3(x, 0f, z) + rotation * sample;
+                var ground = GroundHeight(terrain, worldPoint.x, worldPoint.z);
+                lowest = Mathf.Min(lowest, ground);
+                highest = Mathf.Max(highest, ground);
+            }
+        }
+
+        private static GameObject CreateHousePart(
+            string name,
+            Transform parent,
+            Vector3 localPosition,
+            Vector3 localScale,
+            Vector3 localEulerAngles,
+            Material material)
+        {
+            var part = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            part.name = name;
+            part.transform.SetParent(parent, false);
+            part.transform.localPosition = localPosition;
+            part.transform.localRotation = Quaternion.Euler(localEulerAngles);
+            part.transform.localScale = localScale;
+            part.GetComponent<MeshRenderer>().sharedMaterial = material;
+            part.isStatic = true;
+            return part;
         }
 
         private static void BuildBoundaryRoadSetDressing(Terrain terrain, Transform parent)
@@ -1080,8 +1486,15 @@ namespace TetIsHome.EditorTools
                 cameraObject.AddComponent<AudioListener>();
             }
 
-            camera.transform.position = new Vector3(118f, 128f, -118f);
-            camera.transform.rotation = Quaternion.LookRotation(new Vector3(118f, 3f, 84f) - camera.transform.position);
+            var pathZ = 72f;
+            var pathX = RoadCenterX(pathZ);
+            var terrain = UnityEngine.Object.FindFirstObjectByType<Terrain>();
+            var pathGround = terrain != null ? GroundHeight(terrain, pathX, pathZ) : 3f;
+            var eyeHeight = 1.65f;
+            camera.transform.position = new Vector3(pathX - 1.2f, pathGround + eyeHeight, pathZ);
+            camera.transform.rotation = Quaternion.LookRotation(
+                new Vector3(RoadCenterX(pathZ + 28f), pathGround + eyeHeight, pathZ + 28f) - camera.transform.position);
+            camera.name = "Main Camera - Boundary Path Eye Level";
             camera.fieldOfView = 44f;
             camera.nearClipPlane = 0.3f;
             camera.farClipPlane = 650f;
