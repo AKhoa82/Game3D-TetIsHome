@@ -19,9 +19,15 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private float verticalVelocity;
 
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
 
         if (cameraTransform == null && Camera.main != null)
             cameraTransform = Camera.main.transform;
@@ -48,6 +54,16 @@ public class PlayerMovement : MonoBehaviour
         verticalVelocity += gravity * Time.deltaTime;
 
         float speed = SprintPressed() ? runSpeed : walkSpeed;
+
+        if (animator != null)
+        {
+            bool isMoving = direction.sqrMagnitude > 0.001f;
+            bool isRunning = isMoving && SprintPressed();
+
+            float animationSpeed = !isMoving ? 0f : isRunning ? 1f : 0.5f;
+
+            animator.SetFloat("Speed", animationSpeed, 0.15f, Time.deltaTime);
+        }
         Vector3 movement = direction * speed;
         movement.y = verticalVelocity;
 
