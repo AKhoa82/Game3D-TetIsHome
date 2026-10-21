@@ -49,7 +49,16 @@ public class PlayerMovement : MonoBehaviour
             verticalVelocity = -2f;
 
         if (controller.isGrounded && JumpPressed())
-            verticalVelocity = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        {
+            verticalVelocity = Mathf.Sqrt(
+                jumpHeight * -2f * gravity
+            );
+
+            if (animator != null)
+            {
+                animator.SetTrigger("Jump");
+            }
+        }
 
         verticalVelocity += gravity * Time.deltaTime;
 
