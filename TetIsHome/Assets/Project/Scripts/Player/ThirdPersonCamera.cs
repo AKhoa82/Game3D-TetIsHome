@@ -9,6 +9,11 @@ public class ThirdPersonCamera
     [SerializeField] private float height = 1.6f;
     [SerializeField] private float smoothSpeed = 12f;
 
+    [Header("Camera Collision")]
+    [SerializeField] private LayerMask collisionMask = ~0;
+    [SerializeField] private float collisionRadius = 0.25f;
+    [SerializeField] private float collisionPadding = 0.1f;
+
     private Transform target;
     private Camera playerCamera;
 
@@ -40,18 +45,44 @@ public class ThirdPersonCamera
         Vector3 focusPoint =
             target.position + Vector3.up * height;
 
-        Vector3 desiredPosition =
-            focusPoint - rotation * Vector3.forward * distance;
+        Vector3 cameraDirection =
+            -(rotation * Vector3.forward);
 
-        if (instant)
+        float targetDistance = distance;
+
+        // Kiem tra vat can giua nhan vat va camera
+        bool isBlocked = Physics.SphereCast(
+            focusPoint,
+            collisionRadius,
+            cameraDirection,
+            out RaycastHit hit,
+            distance,
+            collisionMask,
+            QueryTriggerInteraction.Ignore
+        );
+
+        // Dua camera lai gan neu gap vat can
+        if (isBlocked)
+        {
+            targetDistance = Mathf.Max(
+                0.02f,
+                hit.distance - collisionPadding
+            );
+        }
+
+        Vector3 desiredPosition =
+            focusPoint + cameraDirection * targetDistance;
+
+        // Tien gan nhanh khi gap vat can
+        // Lui ra muot khi het vat can
+        if (instant || isBlocked)
         {
             playerCamera.transform.position = desiredPosition;
         }
         else
         {
-            float lerpFactor = 1f - Mathf.Exp(
-                -smoothSpeed * Time.deltaTime
-            );
+            float lerpFactor =
+                1f - Mathf.Exp(-smoothSpeed * Time.deltaTime);
 
             playerCamera.transform.position = Vector3.Lerp(
                 playerCamera.transform.position,
