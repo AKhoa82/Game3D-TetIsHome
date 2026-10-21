@@ -38,11 +38,33 @@ public class PlayerMovement : MonoBehaviour
         Vector2 input = ReadMoveInput();
         Vector3 direction = GetWorldDirection(input);
 
-        if (direction.sqrMagnitude > 0.001f)
+        PlayerCameraController viewCamera = cameraTransform != null
+    ? cameraTransform.GetComponent<PlayerCameraController>()
+    : null;
+
+        if (viewCamera != null && viewCamera.IsFirstPerson)
         {
+            // Goc nhin thu nhat: quay nhan vat theo camera
+            Vector3 lookDirection = cameraTransform.forward;
+            lookDirection.y = 0f;
+
+            if (lookDirection.sqrMagnitude > 0.001f)
+            {
+                transform.rotation = Quaternion.LookRotation(
+                    lookDirection.normalized
+                );
+            }
+        }
+        else if (direction.sqrMagnitude > 0.001f)
+        {
+            // Goc nhin thu ba: quay theo huong di chuyen
             Quaternion targetRotation = Quaternion.LookRotation(direction);
+
             transform.rotation = Quaternion.Slerp(
-                transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+                transform.rotation,
+                targetRotation,
+                rotationSpeed * Time.deltaTime
+            );
         }
 
         if (controller.isGrounded && verticalVelocity < 0f)

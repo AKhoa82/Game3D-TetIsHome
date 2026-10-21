@@ -9956,10 +9956,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThirdPersonCamera
   target: {fileID: 659560081}
-  distance: 4
-  height: 1.6
   mouseSensitivity: 0.12
-  smoothSpeed: 12
+  minPitch: -65
+  maxPitch: 65
+  firstPerson:
+    eyeHeight: 1.6
+    eyeForwardOffset: 0.3
+    eyeBoneUpOffset: 0.15
+    firstPersonFOV: 80
+    nearClipPlane: 0.12
+    hideHeadInFirstPerson: 0
+    hiddenHeadScale: 0.01
+  thirdPerson:
+    distance: 4
+    height: 1.6
+    smoothSpeed: 12
 --- !u!114 &833604736
 MonoBehaviour:
   m_ObjectHideFlags: 0
