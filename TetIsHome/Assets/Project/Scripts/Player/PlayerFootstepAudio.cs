@@ -7,6 +7,15 @@ public class PlayerFootstepAudio : MonoBehaviour
     [Header("Footstep Clips")]
     [SerializeField] private AudioClip[] footstepClips;
 
+    [Header("Surface Footsteps")]
+    [SerializeField] private AudioClip[] grassClips;
+    [SerializeField] private AudioClip[] dirtClips;
+    [SerializeField] private AudioClip[] stoneClips;
+
+    [Header("Surface Detection")]
+    [SerializeField] private LayerMask groundMask = ~0;
+    [SerializeField] private float raycastDistance = 1.8f;
+
     [Header("Footstep Settings")]
     [SerializeField] private float metersPerStep = 1.1f;
     [SerializeField] private float minimumSpeed = 0.15f;
@@ -84,26 +93,64 @@ public class PlayerFootstepAudio : MonoBehaviour
 
     private void PlayFootstep()
     {
-        int index = Random.Range(0, footstepClips.Length);
+        AudioClip[] clips = GetSurfaceClips();
 
-        // Han che lap lai cung mot am thanh
-        if (footstepClips.Length > 1 && index == lastClipIndex)
+        if (clips == null || clips.Length == 0)
+            return;
+
+        int index = Random.Range(0, clips.Length);
+
+        if (clips.Length > 1 && index == lastClipIndex)
         {
-            index = (index + 1) % footstepClips.Length;
+            index = (index + 1) % clips.Length;
         }
 
         lastClipIndex = index;
 
-        AudioClip clip = footstepClips[index];
+        AudioClip clip = clips[index];
 
         if (clip == null)
             return;
 
-        audioSource.pitch = Random.Range(
-            minPitch,
-            maxPitch
-        );
+        audioSource.pitch = Random.Range(minPitch, maxPitch);
 
         audioSource.PlayOneShot(clip, volume);
+    }
+
+    private AudioClip[] GetSurfaceClips()
+    {
+        Vector3 origin = transform.position + Vector3.up * 0.6f;
+
+        if (!Physics.Raycast(origin, Vector3.down, out RaycastHit hit, raycastDistance, groundMask, QueryTriggerInteraction.Ignore))
+        {
+            return footstepClips;
+        }
+
+        FootstepSurface surface = hit.collider.GetComponentInParent<FootstepSurface>();
+
+        if (surface == null)
+            return footstepClips;
+
+        FootstepSurfaceType type = surface.GetSurface(hit.point);
+
+        switch (type)
+        {
+            case FootstepSurfaceType.Grass:
+                if (grassClips != null && grassClips.Length > 0)
+                    return grassClips;
+                break;
+
+            case FootstepSurfaceType.Dirt:
+                if (dirtClips != null && dirtClips.Length > 0)
+                    return dirtClips;
+                break;
+
+            case FootstepSurfaceType.Stone:
+                if (stoneClips != null && stoneClips.Length > 0)
+                    return stoneClips;
+                break;
+        }
+
+        return footstepClips;
     }
 }
