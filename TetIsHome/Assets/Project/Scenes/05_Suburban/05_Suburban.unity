@@ -8416,6 +8416,31 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 35e9a001044fc834183f7e3960182fe1, type: 3}
   - {fileID: 8300000, guid: 29321f06833e69c4aa0c8b87928d3ad7, type: 3}
   - {fileID: 8300000, guid: 2f16b58773176d440a500e823b9ac9b7, type: 3}
+  grassClips:
+  - {fileID: 8300000, guid: dbe9059b81d6af14dae4e23c5f982c6b, type: 3}
+  - {fileID: 8300000, guid: bc9d650b221378746aa22befbbd78108, type: 3}
+  - {fileID: 8300000, guid: db60841fc6505da4090174c67f6590ca, type: 3}
+  - {fileID: 8300000, guid: 51e412ca3ad8b014b889292c0c1f595f, type: 3}
+  - {fileID: 8300000, guid: e72a88a50457ce941be21d2264954e4c, type: 3}
+  - {fileID: 8300000, guid: 2ffdebcb4db43254796d38e5f8d1cf72, type: 3}
+  dirtClips:
+  - {fileID: 8300000, guid: a4b1e4b60ce80b94ca145a5a08516952, type: 3}
+  - {fileID: 8300000, guid: fe76189d58535344c8c1bf376aaf62f9, type: 3}
+  - {fileID: 8300000, guid: 5cce478fdad8cde49bc6feb68bef5430, type: 3}
+  - {fileID: 8300000, guid: 30170ef29b58af04fbd0aa3cbe718576, type: 3}
+  - {fileID: 8300000, guid: 602acde41bcd03d4bbdd7dacee287f0b, type: 3}
+  - {fileID: 8300000, guid: 919b5fca09eae6b4791e576b2c4a86de, type: 3}
+  stoneClips:
+  - {fileID: 8300000, guid: 7a03d20fcf3f43f4a94d85a1f0fb1be7, type: 3}
+  - {fileID: 8300000, guid: beac14ed98e37c647a4fdde1c4537000, type: 3}
+  - {fileID: 8300000, guid: 5471499d35742f14a81bc293cae74812, type: 3}
+  - {fileID: 8300000, guid: 9e0bda4bdd34e254f834e85bc65de827, type: 3}
+  - {fileID: 8300000, guid: f020b27362ede9a429058e79ab4bebc7, type: 3}
+  - {fileID: 8300000, guid: d2233c28a7272224bba6afb120a5f2a2, type: 3}
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 1
+  raycastDistance: 1.8
   metersPerStep: 1.1
   minimumSpeed: 0.15
   volume: 0.65
@@ -9663,6 +9688,7 @@ GameObject:
   - component: {fileID: 811619505}
   - component: {fileID: 811619503}
   - component: {fileID: 811619504}
+  - component: {fileID: 811619506}
   m_Layer: 0
   m_Name: Suburban Terrain
   m_TagString: Untagged
@@ -9745,6 +9771,30 @@ Transform:
   m_Children: []
   m_Father: {fileID: 2076957462}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &811619506
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 811619502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83a6dee4d8b1f0e4cb4632b7c39d2a6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepSurface
+  defaultSurface: 1
+  terrainSurfaceRules:
+  - terrainLayer: {fileID: 8574412962073106934, guid: 6030d4ecea42c4a4a8df94e0e7854f90, type: 2}
+    surface: 1
+  - terrainLayer: {fileID: 8574412962073106934, guid: 44c91ff670f3f3a4baa73d3d6b595aa3, type: 2}
+    surface: 2
+  - terrainLayer: {fileID: 8574412962073106934, guid: 3e95f0de195aa9d47a801a3cec488555, type: 2}
+    surface: 3
+  - terrainLayer: {fileID: 8574412962073106934, guid: a7432bd6cfc4e4f4a9208f180f0a7f36, type: 2}
+    surface: 2
+  - terrainLayer: {fileID: 8574412962073106934, guid: 731e3b5ac8d62b84e9132f24ac2deff4, type: 2}
+    surface: 3
 --- !u!1 &822030907
 GameObject:
   m_ObjectHideFlags: 0
@@ -16296,6 +16346,7 @@ GameObject:
   - component: {fileID: 1430961661}
   - component: {fileID: 1430961660}
   - component: {fileID: 1430961659}
+  - component: {fileID: 1430961662}
   m_Layer: 0
   m_Name: Terrain_(0.00, 0.00, -170.00)
   m_TagString: Untagged
@@ -16378,6 +16429,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1430961662
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1430961658}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 83a6dee4d8b1f0e4cb4632b7c39d2a6c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FootstepSurface
+  defaultSurface: 1
+  terrainSurfaceRules: []
 --- !u!1001 &1432814065
 PrefabInstance:
   m_ObjectHideFlags: 0
