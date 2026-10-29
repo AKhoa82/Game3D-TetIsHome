@@ -11,6 +11,8 @@ public static class MarketMapBuilder
     private const string ScenePath = "Assets/Project/Scenes/04_Market/MapCho.unity";
     private const string GeneratedFolder = "Assets/Project/Scenes/04_Market/Generated";
     private const float GroundY = 1.85f;
+    private const float CentralTreeTargetHeight = 16.8f;
+    private const float CentralTreeCanopyWidthMultiplier = 1.0833334f;
 
     private static readonly Dictionary<string, Material> Materials = new();
 
@@ -62,6 +64,9 @@ public static class MarketMapBuilder
         EditorSceneManager.MarkSceneDirty(scene);
         EditorSceneManager.SaveScene(scene, ScenePath);
         AssetDatabase.SaveAssets();
+        MarketCherryTreeGrassPainter.RebuildAndSave();
+        MarketPottedCherryBlossomBuilder.BuildAndPlace();
+        MarketGoldenBlossomBonsaiBuilder.BuildAndPlace();
         AssetDatabase.Refresh();
         Debug.Log("[MarketMapBuilder] Tet Flower Market generated successfully: " + ScenePath);
     }
@@ -174,28 +179,12 @@ public static class MarketMapBuilder
         }
         data.SetHeights(0, 0, heights);
 
-        string texPath = $"{GeneratedFolder}/T_Grass.asset";
-        Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(texPath);
-        if (texture == null)
-        {
-            texture = new Texture2D(4, 4, TextureFormat.RGBA32, true) { name = "T_Grass" };
-            Color grass = new(0.27f, 0.47f, 0.19f, 1f);
-            Color[] pixels = new Color[16];
-            for (int i = 0; i < pixels.Length; i++) pixels[i] = grass * UnityEngine.Random.Range(0.88f, 1.12f);
-            texture.SetPixels(pixels);
-            texture.Apply();
-            AssetDatabase.CreateAsset(texture, texPath);
-        }
-        string layerPath = $"{GeneratedFolder}/MarketGrass.terrainlayer";
-        TerrainLayer layer = AssetDatabase.LoadAssetAtPath<TerrainLayer>(layerPath);
-        if (layer == null)
-        {
-            layer = new TerrainLayer { name = "Market Grass" };
-            AssetDatabase.CreateAsset(layer, layerPath);
-        }
-        layer.diffuseTexture = texture;
-        layer.tileSize = new Vector2(9f, 9f);
-        data.terrainLayers = new[] { layer };
+        const string grassLayerPath =
+            "Assets/FantasyEnvironments/Environments/TerrainLayers/layer_ground_grass.terrainlayer";
+        TerrainLayer grassLayer = AssetDatabase.LoadAssetAtPath<TerrainLayer>(grassLayerPath);
+        if (grassLayer == null)
+            throw new InvalidOperationException("Missing required grass Terrain Layer: " + grassLayerPath);
+        data.terrainLayers = new[] { grassLayer };
 
         GameObject terrainObject = Terrain.CreateTerrainGameObject(data);
         terrainObject.name = "Terrain - Tet Flower Market";
@@ -225,22 +214,7 @@ public static class MarketMapBuilder
 
     private static void CreatePathsAndPlaza(Transform parent)
     {
-        Box("Main South Path", parent, new Vector3(0, GroundY + .09f, -27f), new Vector3(8f, .18f, 35f), "Stone");
-        Box("North Path", parent, new Vector3(0, GroundY + .09f, 33f), new Vector3(7f, .18f, 20f), "Stone");
-        Box("East Path", parent, new Vector3(40f, GroundY + .09f, 0), new Vector3(36f, .18f, 7f), "Stone");
-        Box("West Path", parent, new Vector3(-40f, GroundY + .09f, 0), new Vector3(36f, .18f, 7f), "Stone");
-
-        for (int i = 0; i < 48; i++)
-        {
-            float angle = i * Mathf.PI * 2f / 48f;
-            Vector3 pos = new(Mathf.Sin(angle) * 25.2f, GroundY + .10f, Mathf.Cos(angle) * 25.2f);
-            GameObject segment = Box("Circular Path", parent, pos, new Vector3(4.0f, .18f, 3.3f), "StoneLight");
-            segment.transform.rotation = Quaternion.Euler(0, angle * Mathf.Rad2Deg, 0);
-        }
-
-        Cylinder("Central Plaza", parent, new Vector3(0, GroundY + .06f, 0), new Vector3(22.2f, .10f, 22.2f), "Sand", 64);
-        Cylinder("Central Garden", parent, new Vector3(0, GroundY + .18f, 0), new Vector3(16.8f, .20f, 16.8f), "Soil", 64);
-        Box("Approach Road", parent, new Vector3(0, GroundY + .08f, -61f), new Vector3(9f, .16f, 18f), "Stone");
+        // Roads and the central ground are painted into Terrain alphamaps.
     }
 
     private static void CreateGateAndBridges(Transform parent)
@@ -272,7 +246,15 @@ public static class MarketMapBuilder
     {
         Cylinder("Tree Planter Outer", parent, new Vector3(0, GroundY + .48f, 0), new Vector3(5.2f, .52f, 5.2f), "StoneLight", 48);
         Cylinder("Tree Planter Soil", parent, new Vector3(0, GroundY + 1.02f, 0), new Vector3(4.3f, .10f, 4.3f), "Soil", 48);
-        GameObject tree = InstantiatePrefab("Assets/Project/Prefabs/Market/Landmarks/CherryBlossomTree.prefab", parent, new Vector3(0, GroundY + 1.05f, 0), Quaternion.Euler(0, 22f, 0), "Central Cherry Blossom Tree", 14f);
+        GameObject tree = InstantiatePrefab("Assets/Project/Prefabs/Market/Landmarks/CherryBlossomTree.prefab", parent, new Vector3(0, GroundY + 1.05f, 0), Quaternion.Euler(0, 22f, 0), "Central Cherry Blossom Tree", CentralTreeTargetHeight);
+        if (tree != null)
+        {
+            Vector3 scale = tree.transform.localScale;
+            tree.transform.localScale = new Vector3(
+                scale.x * CentralTreeCanopyWidthMultiplier,
+                scale.y,
+                scale.z * CentralTreeCanopyWidthMultiplier);
+        }
         if (tree == null)
         {
             Cylinder("Tree Trunk", parent, new Vector3(0, 6.2f, 0), new Vector3(1.0f, 4.3f, 1.0f), "Wood", 16);
@@ -295,6 +277,8 @@ public static class MarketMapBuilder
             InstantiatePrefab($"Assets/FantasyEnvironments/Environments/Prefabs/Flower{(i % 9) + 1}.prefab", parent,
                 new Vector3(Mathf.Sin(a) * 7.0f, GroundY + 1.12f, Mathf.Cos(a) * 7.0f), Quaternion.Euler(0, i * 37f, 0), "Mai Garden Flower", 1.0f);
         }
+
+        MarketCentralLandmarkEnhancer.CreateLowFlowerClusters(parent, new Vector3(0f, GroundY + 1.12f, 0f));
     }
 
     private static void CreateVendorZones(Transform parent)
