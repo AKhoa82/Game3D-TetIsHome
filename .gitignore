@@ -82,3 +82,7 @@ sysinfo.txt
 # ================================
 
 .gradle/
+
+# Local asset sources and scene review backups
+/Game/
+/SceneLayoutReview/
