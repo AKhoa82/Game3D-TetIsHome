@@ -11,6 +11,13 @@ public class PlayerStamina : MonoBehaviour
     private float regenBuffer;
     private bool exhausted;
 
+    private void Start()
+    {
+        // Khi vao Scene, kiem tra nang luong hien tai
+        exhausted = GameSession.Instance.Stamina
+                    < minStaminaToRestart;
+    }
+
     public bool TickSprint(bool wantsToSprint, bool isMoving, float deltaTime)
     {
         GameSession session = GameSession.Instance;
