@@ -36,6 +36,9 @@ public class ScenePortal : MonoBehaviour
         if (isLoading)
             return;
 
+        if (GameSession.Instance.Health <= 0)
+            return;
+
         if (!IsPlayerNear())
             return;
 
@@ -65,7 +68,7 @@ public class ScenePortal : MonoBehaviour
 
     private void OnGUI()
     {
-        if (!isLoading && IsPlayerNear())
+        if (!isLoading && GameSession.Instance.Health > 0 && IsPlayerNear())
         {
             GUI.Box(
                 new Rect(Screen.width / 2 - 130,
