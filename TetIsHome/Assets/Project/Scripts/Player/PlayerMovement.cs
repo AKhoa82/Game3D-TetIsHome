@@ -18,6 +18,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController controller;
     private float verticalVelocity;
+    private PlayerStamina playerStamina;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
@@ -25,6 +26,7 @@ public class PlayerMovement : MonoBehaviour
     private void Awake()
     {
         controller = GetComponent<CharacterController>();
+        playerStamina = GetComponent<PlayerStamina>();
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -84,16 +86,36 @@ public class PlayerMovement : MonoBehaviour
 
         verticalVelocity += gravity * Time.deltaTime;
 
-        float speed = SprintPressed() ? runSpeed : walkSpeed;
+        bool isMoving = direction.sqrMagnitude > 0.001f;
+        bool wantsToSprint = SprintPressed();
 
+        bool isRunning = isMoving && wantsToSprint;
+
+        // Kiem tra va tieu hao Stamina
+        if (playerStamina != null)
+        {
+            isRunning = playerStamina.TickSprint(
+                wantsToSprint,
+                isMoving,
+                Time.deltaTime
+            );
+        }
+
+        float speed = isRunning ? runSpeed : walkSpeed;
+
+        // Cap nhat Animation
         if (animator != null)
         {
-            bool isMoving = direction.sqrMagnitude > 0.001f;
-            bool isRunning = isMoving && SprintPressed();
+            float animationSpeed =
+                !isMoving ? 0f :
+                isRunning ? 1f : 0.5f;
 
-            float animationSpeed = !isMoving ? 0f : isRunning ? 1f : 0.5f;
-
-            animator.SetFloat("Speed", animationSpeed, 0.15f, Time.deltaTime);
+            animator.SetFloat(
+                "Speed",
+                animationSpeed,
+                0.15f,
+                Time.deltaTime
+            );
         }
         Vector3 movement = direction * speed;
         movement.y = verticalVelocity;
@@ -150,5 +172,10 @@ public class PlayerMovement : MonoBehaviour
         Gamepad gamepad = Gamepad.current;
         return (keyboard != null && keyboard.spaceKey.wasPressedThisFrame)
             || (gamepad != null && gamepad.buttonSouth.wasPressedThisFrame);
+    }
+
+    public void ResetVerticalVelocity()
+    {
+        verticalVelocity = -2f;
     }
 }
