@@ -102132,7 +102132,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6327853581402741778, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9.9268
+      value: 64.7
       objectReference: {fileID: 0}
     - target: {fileID: 6327853581402741778, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
       propertyPath: m_LocalPosition.y
@@ -102140,7 +102140,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6327853581402741778, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 1.98
+      value: -11.6
       objectReference: {fileID: 0}
     - target: {fileID: 6327853581402741778, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
       propertyPath: m_LocalRotation.w
@@ -102324,6 +102324,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1332498574991068917, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
       insertIndex: -1
       addedObject: {fileID: 594593799}
+    - targetCorrespondingSourceObject: {fileID: 1332498574991068917, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 594593801}
   m_SourcePrefab: {fileID: 100100000, guid: 2f821da93c17ea44ca6ae9f7cab86365, type: 3}
 --- !u!1 &594593797 stripped
 GameObject:
@@ -102479,6 +102482,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &594593801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 594593797}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 611acc834b73d3740990de7b0d25a85a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerDebugStatus
 --- !u!1001 &595622517
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -197271,6 +197286,51 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4399376854586962, guid: 9da14cd80e3d72b4c8501e9acc6740f3, type: 3}
   m_PrefabInstance: {fileID: 988638333}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &989091650
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 989091652}
+  - component: {fileID: 989091651}
+  m_Layer: 0
+  m_Name: Spawn_From_Suburban
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &989091651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 989091650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bd264656ec36864da368149684542fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SceneSpawnPoint
+  spawnId: FromSuburban
+--- !u!4 &989091652
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 989091650}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 66.5, y: 1.11169, z: -12.32}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &989397097
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -335158,6 +335218,53 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 2774220344278030320, guid: 5030b52d6e519be49b572fcea9679d64, type: 3}
   m_PrefabInstance: {fileID: 1962297443}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1963264242
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1963264244}
+  - component: {fileID: 1963264243}
+  m_Layer: 0
+  m_Name: Portal_To_Suburban
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1963264243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963264242}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 109798c83a5c35e47ab26fcea6bb287f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ScenePortal
+  targetSceneName: 05_Suburban
+  targetSpawnId: FromResidential
+  interactDistance: 3
+--- !u!4 &1963264244
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1963264242}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -66.4, y: 1.72847, z: -1.2}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1964278349
 GameObject:
   m_ObjectHideFlags: 0
@@ -368658,3 +368765,5 @@ SceneRoots:
   - {fileID: 324456177}
   - {fileID: 1860762783}
   - {fileID: 594593796}
+  - {fileID: 989091652}
+  - {fileID: 1963264244}
