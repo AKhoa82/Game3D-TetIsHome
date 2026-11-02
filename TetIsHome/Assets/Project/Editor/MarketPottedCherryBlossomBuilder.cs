@@ -98,7 +98,7 @@ public static class MarketPottedCherryBlossomBuilder
         GameObject branches = UnityEngine.Object.Instantiate(branchModel, root.transform);
         branches.name = "Cherry Blossom Branches";
         ApplyMaterial(branches, branchMaterial);
-        FitHeightAndSetBottom(branches, 5.8f, soilY - 0.20f);
+        FitHeightAndSetBottom(branches, 4.55f, soilY - 0.20f);
         branches.transform.position += new Vector3(openingCenter.x, 0f, openingCenter.z);
 
         CapsuleCollider collider = root.AddComponent<CapsuleCollider>();

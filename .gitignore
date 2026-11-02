@@ -82,3 +82,6 @@ sysinfo.txt
 # ================================
 
 .gradle/
+
+# Original downloaded asset archives kept outside the Unity project.
+_AssetSourceArchives/

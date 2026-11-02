@@ -67,6 +67,9 @@ public static class MarketMapBuilder
         MarketCherryTreeGrassPainter.RebuildAndSave();
         MarketPottedCherryBlossomBuilder.BuildAndPlace();
         MarketGoldenBlossomBonsaiBuilder.BuildAndPlace();
+        MarketTetAssetIntegrator.BuildAndPlace();
+        MarketLivelinessEnhancer.BuildAndPlace();
+        MarketMoatToGroveConverter.BuildAndPlace();
         AssetDatabase.Refresh();
         Debug.Log("[MarketMapBuilder] Tet Flower Market generated successfully: " + ScenePath);
     }
@@ -219,11 +222,6 @@ public static class MarketMapBuilder
 
     private static void CreateGateAndBridges(Transform parent)
     {
-        Box("South Bridge", parent, new Vector3(0, 2.0f, -48f), new Vector3(10f, .45f, 12f), "WoodLight");
-        for (int i = -4; i <= 4; i++)
-            Box("Bridge Plank", parent, new Vector3(0, 2.25f, -48f + i * 1.25f), new Vector3(10.4f, .15f, 1.05f), i % 2 == 0 ? "WoodLight" : "Wood");
-        Box("North Bridge", parent, new Vector3(0, 1.95f, 48f), new Vector3(7f, .35f, 11f), "WoodLight");
-
         GameObject gate = InstantiatePrefab("Assets/FantasyEnvironments/Environments/Town/Prefabs/TownGate.prefab", parent, new Vector3(0, GroundY, -40.5f), Quaternion.identity, "Main Gate - Cong Lang", 9.5f);
         if (gate == null) CreateCustomGate(parent);
 
