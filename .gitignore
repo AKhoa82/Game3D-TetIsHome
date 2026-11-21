@@ -85,3 +85,7 @@ sysinfo.txt
 
 # Original downloaded asset archives kept outside the Unity project.
 _AssetSourceArchives/
+
+# Local asset sources and scene review backups
+/Game/
+/SceneLayoutReview/
