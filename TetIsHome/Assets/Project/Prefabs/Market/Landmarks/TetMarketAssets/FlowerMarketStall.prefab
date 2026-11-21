@@ -1,0 +1,134 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8890403149895006682
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3488357059756009061}
+  - component: {fileID: 8583250743625133443}
+  m_Layer: 0
+  m_Name: FlowerMarketStall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3488357059756009061
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8890403149895006682}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4118501690211905346}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8583250743625133443
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8890403149895006682}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 13.889129, y: 6.4687495, z: 14.792912}
+  m_Center: {x: 0, y: 3.5937498, z: 0}
+--- !u!1001 &4516373796769253545
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 3488357059756009061}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 864.45325
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 864.4533
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 864.4533
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.13747829
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 3.6524203
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0.008103978
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: cb5f0c938723ccc4a8fed68d6e3a9a1b, type: 2}
+    - target: {fileID: 919132149155446097, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+      propertyPath: m_Name
+      value: Flower Market Stall Model
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+--- !u!4 &4118501690211905346 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 0864e07497dfb4540840a91df12babde, type: 3}
+  m_PrefabInstance: {fileID: 4516373796769253545}
+  m_PrefabAsset: {fileID: 0}
