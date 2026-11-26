@@ -264,7 +264,22 @@ public class WildDogAI : MonoBehaviour
         {
             attackHitApplied = true;
             if (CanAttackPlayer())
-                GameSession.Instance.TakeDamage(attackDamage);
+            {
+                PlayerCombat playerCombat =
+                    player.GetComponent<PlayerCombat>();
+
+                if (playerCombat != null)
+                {
+                    playerCombat.ReceiveDamage(
+                        attackDamage,
+                        transform.position
+                    );
+                }
+                else
+                {
+                    GameSession.Instance.TakeDamage(attackDamage);
+                }
+            }
         }
 
         if (elapsed >= attackDuration)

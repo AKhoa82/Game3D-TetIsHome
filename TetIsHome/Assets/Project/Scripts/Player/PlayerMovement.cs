@@ -19,6 +19,7 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController controller;
     private float verticalVelocity;
     private PlayerStamina playerStamina;
+    private PlayerCombat playerCombat;
 
     [Header("Animation")]
     [SerializeField] private Animator animator;
@@ -27,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         playerStamina = GetComponent<PlayerStamina>();
+        playerCombat = GetComponent<PlayerCombat>();
 
         if (animator == null)
             animator = GetComponentInChildren<Animator>();
@@ -39,6 +41,14 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 input = ReadMoveInput();
         Vector3 direction = GetWorldDirection(input);
+
+        bool isDodging = playerCombat != null && playerCombat.IsDodging;
+        bool isBlocking = playerCombat != null && playerCombat.IsBlocking;
+
+        if (isDodging)
+        {
+            direction = playerCombat.DodgeDirection;
+        }
 
         PlayerCameraController viewCamera = cameraTransform != null
     ? cameraTransform.GetComponent<PlayerCameraController>()
@@ -72,7 +82,7 @@ public class PlayerMovement : MonoBehaviour
         if (controller.isGrounded && verticalVelocity < 0f)
             verticalVelocity = -2f;
 
-        if (controller.isGrounded && JumpPressed())
+        if (controller.isGrounded && JumpPressed() && !isDodging && !isBlocking)
         {
             verticalVelocity = Mathf.Sqrt(
                 jumpHeight * -2f * gravity
@@ -87,12 +97,12 @@ public class PlayerMovement : MonoBehaviour
         verticalVelocity += gravity * Time.deltaTime;
 
         bool isMoving = direction.sqrMagnitude > 0.001f;
-        bool wantsToSprint = SprintPressed();
+        bool wantsToSprint = SprintPressed() && !isDodging && !isBlocking;
 
         bool isRunning = isMoving && wantsToSprint;
 
         // Kiem tra va tieu hao Stamina
-        if (playerStamina != null)
+        if (playerStamina != null && !isDodging && !isBlocking)
         {
             isRunning = playerStamina.TickSprint(
                 wantsToSprint,
@@ -102,6 +112,15 @@ public class PlayerMovement : MonoBehaviour
         }
 
         float speed = isRunning ? runSpeed : walkSpeed;
+
+        if (isDodging)
+        {
+            speed = playerCombat.DodgeSpeed;
+        }
+        else if (isBlocking)
+        {
+            speed = walkSpeed * 0.5f;
+        }
 
         // Cap nhat Animation
         if (animator != null)
@@ -177,5 +196,10 @@ public class PlayerMovement : MonoBehaviour
     public void ResetVerticalVelocity()
     {
         verticalVelocity = -2f;
+    }
+
+    public Vector3 GetMoveDirection()
+    {
+        return GetWorldDirection(ReadMoveInput());
     }
 }
